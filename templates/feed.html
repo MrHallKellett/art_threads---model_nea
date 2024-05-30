@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+    {% block extra_head %}
+    <script src="static/scripts.js">
+        // not working
+        document.addEventListener('DOMContentLoaded', function () { console.log("it's ready")})     
+    </script>
+
+    {% endblock %}
+
+    {% block page_content %}
+
+    <h2>YOUR FEED:</h2>
+
+    <label for="load_btn">A button that loads the feed as I still haven't worked how to do this on page load when template inheritance is being used:
+        <button name="load_btn"
+        onclick="load_feed();">
+            LOAD FEED
+        </button>
+    </label>
+
+    {% endblock %}
+
+    {% block scripts %}
+
+    {% endblock %}
+
+
