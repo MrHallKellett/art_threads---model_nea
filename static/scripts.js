@@ -46,7 +46,9 @@ function load_feed()
     {
         for (const thread of feed_json)
         {
-            explore_replies(thread, document.body, original_post=true)          
+            explore_replies(thread, document.body, original_post=true)   
+            let horiz_rule = document.createElement("hr")
+            document.body.appendChild(horiz_rule)       
         }
     }).catch(error =>
         console.log(error)
