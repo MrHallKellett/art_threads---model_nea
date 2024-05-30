@@ -1,0 +1,25 @@
+{% block extra_head %}
+
+
+{% endblock %}
+
+{% extends "base.html" %}
+
+{% block page_content %}
+
+<form action="/new_post/{{ in_reply_to }}" method="POST" enctype="multipart/form-data">
+
+    <label for="uploaded_image">SELECT IMAGE TO UPLOAD:</label>
+
+    <br>
+    <input type="file" name="uploaded_image"/>
+    
+    <br>
+    <textarea name="caption" placeholder="Your caption here:">
+
+    </textarea {% if not in_reply_to %} disabled {% endif %} >
+    <br>
+    <button type="submit">UPLOAD!</button>
+</form>
+
+{% endblock %}

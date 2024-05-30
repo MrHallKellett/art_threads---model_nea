@@ -9,7 +9,7 @@ from models import Feed
 
 app = Flask(__name__)
 app.secret_key = "hello"
-
+app.config["UPLOAD_FOLDER"] = "static/images/"
 
 def logged_in_to(session):
     current_user = session.get("current_user")
@@ -37,17 +37,24 @@ ON post.user_id = user.user_id""")
 ####################################################
 
 @app.route('/new_post/<parent_post_id>', methods=["GET", "POST"])
+@app.route('/new_post', methods=["GET", "POST"])
 def new_post(parent_post_id = None):
-    if not logged_in_to(session):
-        flash("Must be logged in to do that.")
-        return redirect(url_for("login"))
+    if request.method == "GET":
+        return render_template("new_post.html", in_reply_to=parent_post_id)
+    else:
+        caption = request.form.get("caption")
+        image = request.files["uploaded_image"]
+        image.save(app.config["UPLOAD_FOLDER"] + image.filename)
 
-    
-    # render upload image form
+        ## store the stuff in the database
 
-    # if image has been uploaded, save it to the images directory
+        with Database() as db:
+            db.execute("""INSERT INTO Post(image, user_id, parent_post_id, caption)
+                          VALUES (?, ?, ?)""",
+                          [image.filename, session['current_user'][0],
+                           parent_post_id, caption])
 
-    # write the image filename and the caption (if applicable) to the database.
+        return redirect(url_for("index"))
 
 ####################################################
 
@@ -59,10 +66,10 @@ def login():
         form_password = request.form["psw"]
 
         with Database() as db:
-            db_password = db.execute("SELECT password FROM user WHERE username = ?", [username], one_row=True)[0]
+            user_id, db_password = db.execute("SELECT user_id, password FROM user WHERE username = ?", [username], one_row=True)[0]
         
         if db_password and form_password == db_password:     
-            session["current_user"] = username
+            session["current_user"] = (user_id, username)
             return redirect(url_for("index"))
         else:
             flash("Invalid username and/or password")
