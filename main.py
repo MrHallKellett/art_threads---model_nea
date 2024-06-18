@@ -50,7 +50,7 @@ def new_post(parent_post_id = None):
 
         with Database() as db:
             db.execute("""INSERT INTO Post(image, user_id, parent_post_id, caption)
-                          VALUES (?, ?, ?)""",
+                          VALUES (?, ?, ?, ?)""",
                           [image.filename, session['current_user'][0],
                            parent_post_id, caption])
 
@@ -66,7 +66,7 @@ def login():
         form_password = request.form["psw"]
 
         with Database() as db:
-            user_id, db_password = db.execute("SELECT user_id, password FROM user WHERE username = ?", [username], one_row=True)[0]
+            user_id, db_password = db.execute("SELECT user_id, password FROM user WHERE username = ?", [username], one_row=True)
         
         if db_password and form_password == db_password:     
             session["current_user"] = (user_id, username)
