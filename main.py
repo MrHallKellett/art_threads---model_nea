@@ -76,7 +76,17 @@ def login():
     
     return render_template("login.html")
             
-    
+####################################################
+
+@app.route('/<post_id>/<rank>')
+def submit_vote(this_post_id, rank):
+
+    with Database() as db:
+        db.execute("""SELECT vote.post_id, vote.prize
+                   FROM post, vote 
+                   WHERE vote.user_id = ?
+                   AND post.parent_post_id = ?""", [user_id, parent_])  ### tbc
+
 
 ####################################################
 
@@ -99,6 +109,8 @@ def get_stats(user):
     return render_template("user.html", username=user, post_count=post_count, image=profile_pic)
 
 ####################################################
+
+
 
 @app.route('/')
 def index():

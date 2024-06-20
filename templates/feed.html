@@ -6,15 +6,49 @@
 
     {% block page_content %}
 
+    <button id="new_thread_btn">NEW THREAD</button> 
+
+    <dialog id="new_thread_modal">
+        <form id="new_post_form" enctype="multipart/form-data">
+            <label for="uploaded_image">SELECT IMAGE TO UPLOAD:</label>        
+            <br>
+            <input type="file" name="uploaded_image"/>            
+            <br>
+            <textarea name="caption" placeholder="Your caption here:">        
+            </textarea {% if not in_reply_to %} disabled {% endif %} >
+            <br>
+            <button type="submit">UPLOAD!</button>
+            <button id="close_modal_btn">EXIT</button>    
+        </form>
+    </dialog>
+
+
+    <dialog id="voting_modal">
+        <div id="vote_for_container">
+            
+        </div>
+        
+        <button id="vote_1st_place" name="vote 1">#1</button>
+        <button id="vote_2nd_place" name="vote 2">#2</button>
+        <button id="vote_3rd_place" name="vote 3">#3</button>
+        <button>test</button>
+        
+    </dialog>
+
     <h2>YOUR FEED:</h2>
 
     {% endblock %}
 
     {% block scripts %}
 
+
+
     <script src="static/scripts.js"></script>
     <script>
         load_feed();        
+
+                
+
     </script>
 
     {% endblock %}

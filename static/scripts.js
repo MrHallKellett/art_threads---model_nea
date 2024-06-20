@@ -1,10 +1,41 @@
-function get_feed()
+in_reply_to = null;
+
+function submit_new_post(upload_form, in_reply_to="") {
+    // Create a new FormData object from the form
+    const form_data = new FormData(upload_form);
+  
+    // Create a new XMLHttpRequest object
+    const xhr = new XMLHttpRequest();
+  
+    // Set the request method and URL
+    xhr.open('POST', `/new_post/${in_reply_to}`, true);
+  
+    // Set the appropriate headers
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+  
+    // Define the callback function to handle the server response
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+        // Handle the successful response
+        console.log(xhr.responseText);
+      } else {
+        // Handle the error response
+        console.error(xhr.statusText);
+      }
+    };
+  
+    // Send the form data
+    xhr.send(upload_form);
+  }
+
+
+function get_request(route)
 {
     return new Promise((resolve, reject) =>
     {
         let xhr = new XMLHttpRequest();
         data = null;
-        xhr.open('GET', '../get_feed', true);
+        xhr.open('GET', route, true);
         xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.onload = function()
         {
@@ -33,6 +64,7 @@ function explore_replies(post, previous_ul, original_post=false)
                             by ${post.username} ${caption}
                     </li>`
 
+    ul.addEventListener('click', function() { open_vote_modal(post) });
     previous_ul.appendChild(ul)
     for (const reply of post.replies)
     {
@@ -42,7 +74,7 @@ function explore_replies(post, previous_ul, original_post=false)
 
 function load_feed()
 {
-    get_feed().then(feed_json =>
+    get_request("../get_feed").then(feed_json =>
     {
         for (const thread of feed_json)
         {
@@ -55,4 +87,40 @@ function load_feed()
     )
 }
 
+function open_vote_modal(this_post)
+{
+    console.log("openining vote modal")
+    in_reply_to = this_post.id;
+    const vote_for_container = document.querySelector("div#vote_for_container").innerHTML = this_post.innerHTML;
+    voting_modal.showModal();
+}
 
+
+function process_vote(event)
+{
+    console.log("processing vote")
+    return
+    // const rank = event.target.id;
+    // get_request(`../submit_vote/${in_reply_to}/${rank}`).then(vote_feedback =>
+    // {
+    //     vote_feedback_holder.innerHTML = vote_feedback.text
+    // }).catch(error => console.log(error))
+
+}
+
+const new_thread_modal = document.querySelector("dialog#new_thread_modal");
+const voting_modal = document.querySelector("dialog#voting_modal");
+const new_thread_button = document.querySelector("button#new_thread_btn");
+const close_button = document.querySelector("button#close_modal_btn");
+const vote_1st_button = document.querySelector("button#vote_1st_place_btn")
+const vote_2nd_button = document.querySelector("button#vote_2nd_place_btn")
+const vote_3rd_button = document.querySelector("button#vote_3rd_place_btn")
+
+new_thread_button.addEventListener("click", () => {
+dialog.showModal();
+});
+
+// "Show the dialog" button opens the dialog modally
+vote_1st_button.addEventListener('click', (event) => { process_vote(event) });
+vote_2nd_button.addEventListener('click', (event) => { event.preventDefault(); process_vote(event) });
+vote_3rd_button.addEventListener('click', (event) => { event.preventDefault(); process_vote(event) });
