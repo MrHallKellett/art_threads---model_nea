@@ -18,7 +18,9 @@ class Database:
 			results = self.__cursor.execute(query)
 		self.__connection.commit()
 		if one_row:
-			return results.fetchone()
+			result = results.fetchone()
+			print("returning", result)
+			return result
 		else:
 			return results.fetchall()
 		

@@ -41,5 +41,10 @@ body, button, input
 
 }
 
+#vote_feedback_holder
+{
+    height:100px;
+}
+
 
 

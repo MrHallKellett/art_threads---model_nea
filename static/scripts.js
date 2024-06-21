@@ -31,6 +31,7 @@ function submit_new_post(upload_form, in_reply_to="") {
 
 function get_request(route)
 {
+    console.log("sending GET request..")
     return new Promise((resolve, reject) =>
     {
         let xhr = new XMLHttpRequest();
@@ -90,7 +91,8 @@ function load_feed()
 function open_vote_modal(this_post)
 {
     console.log("openining vote modal")
-    in_reply_to = this_post.id;
+    in_reply_to = this_post.post_id;
+    console.log("logged that post being replied to is", in_reply_to)
     const vote_for_container = document.querySelector("div#vote_for_container").innerHTML = this_post.innerHTML;
     voting_modal.showModal();
 }
@@ -98,15 +100,14 @@ function open_vote_modal(this_post)
 
 function process_vote(event)
 {
+    const rank = event.target.name.slice(-1);
     console.log("processing vote")
-    return
-    // const rank = event.target.id;
-    // get_request(`../submit_vote/${in_reply_to}/${rank}`).then(vote_feedback =>
-    // {
-    //     vote_feedback_holder.innerHTML = vote_feedback.text
-    // }).catch(error => console.log(error))
+    get_request(`../submit_vote/${in_reply_to}/${rank}`).then(vote_feedback =>
+    {
+        vote_feedback_holder.innerHTML = vote_feedback.text
+    }).catch(error => console.log(error))
 
-}
+} 
 
 const new_thread_modal = document.querySelector("dialog#new_thread_modal");
 const voting_modal = document.querySelector("dialog#voting_modal");
@@ -115,6 +116,7 @@ const close_button = document.querySelector("button#close_modal_btn");
 const vote_1st_button = document.querySelector("button#vote_1st_place_btn")
 const vote_2nd_button = document.querySelector("button#vote_2nd_place_btn")
 const vote_3rd_button = document.querySelector("button#vote_3rd_place_btn")
+const vote_feedback_holder = document.querySelector("div#vote_feedback_holder")
 
 new_thread_button.addEventListener("click", () => {
 dialog.showModal();

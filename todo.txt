@@ -1,0 +1,6 @@
+click button to add new thread
+click to trigger new post (reply)
+caption only if new thread
+new post and login as modals
+voting modal, votes in database (post timestamps)
+sort toggle

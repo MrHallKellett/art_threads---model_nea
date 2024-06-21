@@ -78,15 +78,68 @@ def login():
             
 ####################################################
 
-@app.route('/<post_id>/<rank>')
-def submit_vote(this_post_id, rank):
+@app.route('/submit_vote/<post_id>/<prize>')
+def submit_vote(post_id, prize):
 
+    print(f"Submitted votoe {prize} for post {post_id}")
+    user_id = session["current_user"][1]
     with Database() as db:
-        db.execute("""SELECT vote.post_id, vote.prize
-                   FROM post, vote 
-                   WHERE vote.user_id = ?
-                   AND post.parent_post_id = ?""", [user_id, parent_])  ### tbc
 
+            db.execute("""INSERT INTO vote(user_id, post_id, prize, parent_post_id)
+    VALUES (?, ?, ?, ?)
+    ON CONFLICT(user_id, prize_id, parent_post_id) 
+    UPDATE vote SET post_id = ? WHERE user_id = ? AND prize = ? AND parent_post_id = ?""",
+    [user_id, post_id, prize, parent_post_id])
+            
+## come back to this
+            
+
+#             Copy
+# CREATE TABLE my_table (
+#   id INTEGER PRIMARY KEY,
+#   name TEXT,
+#   value INTEGER
+# );
+
+# -- UPSERT statement with returning the updated value
+# SELECT
+#   CASE WHEN changes() > 0 THEN (
+#     SELECT value 
+#     FROM my_table
+#     WHERE id = new.id
+#   ) ELSE new.value END AS returned_value
+# FROM (
+#   INSERT OR REPLACE INTO my_table (id, name, value)
+#   VALUES (1, 'John', 10)
+#   RETURNING value
+# ) AS new;
+
+
+
+
+    #     # get all votes for posts that are replies to the same thread this post is in reply to
+    #     current_votes = db.execute("""SELECT vote.prize, vote.post_id, vote.vote_id
+    #                FROM post, vote 
+    #                WHERE vote.user_id = ?
+    #                AND post.parent_post_id = (SELECT post.parent_post_id
+    #                                          FROM post
+    #                                          WHERE post.post_id = ?)
+    #                GROUP BY vote.post_id""", [user_id, post_id])
+
+    # if current_votes:
+    #     current_votes = {prize:(post_id, vote_id) for prize, post_id, vote_id in current_votes}
+
+    # print("Current votes were:", current_votes)
+    # feedback = f"Vote rank {prize} added!"
+    # if current_votes:
+    #     if rank in current_votes:
+    #         post_id, vote_id = current_votes[rank]
+    #         feedback = f"Vote rank {rank} re-assigned from post id {post_id}"
+    #         db.execute("UPDATE vote SET prize = ? WHERE vote_id = ?", [None, vote_id])
+        
+
+
+    return jsonify(feedback), 200
 
 ####################################################
 
