@@ -104,7 +104,7 @@ function process_vote(event)
     console.log("processing vote")
     get_request(`../submit_vote/${in_reply_to}/${rank}`).then(vote_feedback =>
     {
-        vote_feedback_holder.innerHTML = vote_feedback.text
+        vote_feedback_holder.innerHTML = vote_feedback
     }).catch(error => console.log(error))
 
 } 
@@ -112,14 +112,19 @@ function process_vote(event)
 const new_thread_modal = document.querySelector("dialog#new_thread_modal");
 const voting_modal = document.querySelector("dialog#voting_modal");
 const new_thread_button = document.querySelector("button#new_thread_btn");
-const close_button = document.querySelector("button#close_modal_btn");
+const close_reply_button = document.querySelector("button#close_reply_btn");
+const close_vote_button = document.querySelector("button#close_vote_btn");
 const vote_1st_button = document.querySelector("button#vote_1st_place_btn")
 const vote_2nd_button = document.querySelector("button#vote_2nd_place_btn")
 const vote_3rd_button = document.querySelector("button#vote_3rd_place_btn")
-const vote_feedback_holder = document.querySelector("div#vote_feedback_holder")
+const vote_feedback_holder = document.querySelector("span#vote_feedback_holder")
 
 new_thread_button.addEventListener("click", () => {
-dialog.showModal();
+    dialog.showModal();
+});
+
+close_vote_button.addEventListener("click", () => {
+    voting_modal.close();
 });
 
 // "Show the dialog" button opens the dialog modally

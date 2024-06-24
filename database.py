@@ -12,7 +12,15 @@ class Database:
 		self.__connection.close()
 
 	def execute(self, query, values=None, one_row=False):
+
+			
 		if values:
+			val_copy = list(values)
+			q_debug = query
+			while val_copy:
+				q_debug = q_debug.replace("?", str(val_copy.pop(0)), 1)
+		
+			print("PROCESSING QUERY:", q_debug)
 			results = self.__cursor.execute(query, values)
 		else:
 			results = self.__cursor.execute(query)
