@@ -14,12 +14,14 @@
             <br>
             <input type="file" name="uploaded_image"/>            
             <br>
-            <textarea name="caption" placeholder="Your caption here:">        
-            </textarea {% if not in_reply_to %} disabled {% endif %} >
+<textarea id="caption_input" name="caption" placeholder="Your caption here:" {% if not in_reply_to %} disabled {% endif %}> 
+</textarea>
             <br>
-            <button type="submit">UPLOAD!</button>
-            <button id="close_reply_btn">EXIT</button>    
         </form>
+        
+        <button onclick="submit_new_post();" type="submit">UPLOAD!</button>
+        <button id="close_reply_btn">EXIT</button>    
+        
     </dialog>
 
 
@@ -34,7 +36,10 @@
         <button id="vote_1st_place_btn" name="vote 1">#1</button>
         <button id="vote_2nd_place_btn" name="vote 2">#2</button>
         <button id="vote_3rd_place_btn" name="vote 3">#3</button>
-        <button>test</button>
+
+        <a>
+            <button id="remix_btn">REMIX!</button>
+        </a>
 
         <span id="vote_feedback_holder"></span>
         
@@ -46,14 +51,9 @@
 
     {% block scripts %}
 
-
-
     <script src="static/scripts.js"></script>
     <script>
-        load_feed();        
-
-                
-
+        load_feed();
     </script>
 
     {% endblock %}

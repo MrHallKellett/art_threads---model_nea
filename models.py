@@ -8,13 +8,13 @@ from __future__ import annotations
 
 
 TEST = [row.split("///") for row in '''
-bob123///1///1//////A_stick_man_driving_a_car_png.png///Driving my car, brum brum!
-bob123///2///1///1///A_stickman_riding_a_rollercoaster_png.png///
-jeff456///3///2//////A_stickman_going_shopping_png.png///Let's all go to the mall!!!!
-jeff456///4///2///1///A_stickman_going_to_work_png.png///
-baz987///5///3///1///A_stickman_going_shopping_png.png///
-baz987///6///3///2///A_stick_man_driving_a_car_png.png///
-baz987///7///3///3///A_stick_man_going_to_the_zoo_png.png///'''.strip().splitlines()]
+bob123///1///1//////A_stick_man_driving_a_car_png.png///Driving my car, brum brum!///0
+bob123///2///1///1///A_stickman_riding_a_rollercoaster_png.png//////5
+jeff456///3///2//////A_stickman_going_shopping_png.png///Let's all go to the mall!!!!///2
+jeff456///4///2///1///A_stickman_going_to_work_png.png//////4
+baz987///5///3///1///A_stickman_going_shopping_png.png//////2
+baz987///6///3///2///A_stick_man_driving_a_car_png.png//////4
+baz987///7///3///3///A_stick_man_going_to_the_zoo_png.png//////2'''.strip().splitlines()]
 
     
    
@@ -29,11 +29,12 @@ class PostNotFoundError(Exception):
 class Post:
     """A single node inside a thread tree"""
     def __init__(self, post_id : int, username : str,
-                 image : str, caption : str) -> Self:
+                 image : str, caption : str, popularity: int) -> Self:
         self.__post_id = post_id
         self.__username = username
         self.__image = image
         self.__caption = caption
+        self.__popularity = popularity
         self.__replies = []  # List()  ← creating your own ADT is worth more marks!
    
     def _get_post_id(self) -> int:
@@ -51,10 +52,10 @@ class Post:
     def _display(self, depth: int=0):
         """Recursively display this post and its replies
         - testing purposes only"""
-        print("  " * depth, f"post_id : {self.__post_id}")
-        print("  " * depth, f"username : {self.__username}")
-        print("  " * depth, f"image : {self.__image}")
-        print("  " * depth, f"caption : {self.__caption}")
+        # print("  " * depth, f"post_id : {self.__post_id}")
+        # print("  " * depth, f"username : {self.__username}")
+        # print("  " * depth, f"image : {self.__image}")
+        # print("  " * depth, f"caption : {self.__caption}")
 
         for post in self._get_replies():
             post._display(depth+1)
@@ -64,6 +65,7 @@ class Post:
                 "username":self.__username,
                 "image":self.__image,
                 "caption":self.__caption,
+                "popularity":self.__popularity,
                 "replies":[reply.serialise() for reply in self.__replies]}
 
 #######################################################
@@ -113,16 +115,16 @@ class Feed:
     def __init__(self, data: list):
         self.__threads = []  # List()  ← creating your own ADT is worth more marks!
         for row in data:
-            print(row)
-            username, post_id, user_id, parent_post_id, image, caption = row
-            this_post = Post(int(post_id), username, image, None if not caption else caption)
-            print(parent_post_id, type(parent_post_id))
+            
+            username, post_id, user_id, parent_post_id, image, caption, popularity = row
+            this_post = Post(int(post_id), username, image, None if not caption else caption, int(popularity))
+            
             if not parent_post_id:
                 this_thread = Thread(this_post)
                 self._add(this_thread)
             else:
                 self._assign_reply_to_post(this_post, int(parent_post_id))
-                print(f"Assigned post {post_id} as a reply to {parent_post_id}")
+            
 
     
     def _add(self, this_thread: Thread):
@@ -145,9 +147,9 @@ class Feed:
 
     def _display(self):
         """Iterate through the threads and display them"""
-        print("YOUR FEED!")
+        
         for thread_num, thread in enumerate(self.__threads):
-            print(f"THREAD {thread_num} :")
+        
             thread._display()
     
     def serialise(self):

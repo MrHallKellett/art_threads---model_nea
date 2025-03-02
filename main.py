@@ -10,6 +10,7 @@ from models import Feed
 app = Flask(__name__)
 app.secret_key = "hello"
 app.config["UPLOAD_FOLDER"] = "static/images/"
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB limit
 
 def logged_in_to(session):
     current_user = session.get("current_user")
@@ -25,11 +26,16 @@ def get_feed() -> list[Response, int]:
     if current_user is None:
         return {}, 511
 
-    with Database() as db:        
-        data = db.execute("""SELECT username, post_id, user.user_id, parent_post_id, image, caption
+    query = """SELECT username, post.post_id, user.user_id, post.parent_post_id, image, caption, SUM(prize)
 FROM post
 INNER JOIN user
-ON post.user_id = user.user_id""")
+ON post.user_id = user.user_id
+INNER JOIN vote
+ON post.post_id = vote.post_id
+GROUP BY post.post_id"""
+    with Database() as db:        
+        data = db.execute(query)
+        print(query)
 
     response = Feed(data).serialise()
     return jsonify(response), 200
@@ -39,22 +45,26 @@ ON post.user_id = user.user_id""")
 @app.route('/new_post/<parent_post_id>', methods=["GET", "POST"])
 @app.route('/new_post', methods=["GET", "POST"])
 def new_post(parent_post_id = None):
-    if request.method == "GET":
-        return render_template("new_post.html", in_reply_to=parent_post_id)
-    else:
-        caption = request.form.get("caption")
-        image = request.files["uploaded_image"]
-        image.save(app.config["UPLOAD_FOLDER"] + image.filename)
 
-        ## store the stuff in the database
+    print("Writing image to disk.....")
+    
+    caption = request.form.get("caption")
+    print(caption)
+    image = request.files["uploaded_image"]
+    print(caption, image.filename)
+    result = image.save(app.config["UPLOAD_FOLDER"] + image.filename)
+    print(result)
 
-        with Database() as db:
-            db.execute("""INSERT INTO Post(image, user_id, parent_post_id, caption)
-                          VALUES (?, ?, ?, ?)""",
-                          [image.filename, session['current_user'][0],
-                           parent_post_id, caption])
+    ## store the stuff in the database
 
-        return redirect(url_for("index"))
+    with Database() as db:
+        db.execute("""INSERT INTO Post(image, user_id, parent_post_id, caption)
+                        VALUES (?, ?, ?, ?)""",
+                        [image.filename, session['current_user'][0],
+                        parent_post_id, caption])
+
+    response = True
+    return jsonify(response), 200
 
 ####################################################
 
@@ -66,13 +76,15 @@ def login():
         form_password = request.form["psw"]
 
         with Database() as db:
-            user_id, db_password = db.execute("SELECT user_id, password FROM user WHERE username = ?", [username], one_row=True)
+            result = db.execute("SELECT user_id, password FROM user WHERE username = ?", [username], one_row=True)
         
-        if db_password and form_password == db_password:     
-            session["current_user"] = (user_id, username)
-            return redirect(url_for("index"))
-        else:
-            flash("Invalid username and/or password")
+        if result is not None:
+            user_id, db_password = result
+            if db_password and form_password == db_password:     
+                session["current_user"] = (user_id, username)
+                return redirect(url_for("index"))
+        
+        flash("Invalid username and/or password")
     
     return render_template("login.html")
             
@@ -83,6 +95,9 @@ def submit_vote(post_id, prize):
 
     print(f"Submitted votoe {prize} for post {post_id}")
     user_id, username = session["current_user"]
+
+    prize = {"1":"3", "2":"2", "3":"1"}[prize]
+
     with Database() as db:
             # does not return 
             post_changed_id = db.execute("""INSERT INTO vote(user_id, post_id, prize, parent_post_id)
@@ -113,7 +128,7 @@ def get_stats(user):
         return redirect(url_for("login"))
     
     with Database() as db:
-        username, profile_pic, post_count = db.execute(f'''SELECT username, profile_picture, COUNT(post_id)
+        username, profile_pic, post_count, popularity = db.execute(f'''SELECT username, profile_picture, COUNT(post_id), SUM()
                             FROM user
                             LEFT JOIN post ON user.user_id = post.user_id
                             WHERE username = ?
