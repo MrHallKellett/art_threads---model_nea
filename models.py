@@ -52,7 +52,7 @@ class Post:
                 if reply.popularity >= post.popularity:
                     self.__replies.insert(index, reply)
         else:
-            self.__replies.append(reply)
+            self.__replies.insert(0, reply)
 
 
     def _display(self, depth: int=0):
@@ -95,7 +95,7 @@ class Thread:
                 return this_post
             
             for reply in this_post._get_replies():
-                posts.append(reply) # posts.enqueue(reply) ← creating your own ADT is worth more marks!
+                posts.insert(0, reply) # posts.enqueue(reply) ← creating your own ADT is worth more marks!
         
         raise PostNotFoundError(f"Could not find parent post with post_id {parent_post_id}")
 
@@ -129,7 +129,7 @@ class Feed:
     
     def _add(self, this_thread: Thread):
         """Add a thread to the feed"""
-        self.__threads.append(this_thread)
+        self.__threads.insert(0, this_thread)
 
     def _assign_reply_to_post(self, this_post: Post,
                              parent_post_id: int,

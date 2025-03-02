@@ -39,7 +39,7 @@ function submit_new_post(in_reply_to="") {
     // Send the form data
     xhr.send(form_data);
     new_thread_modal.close();
-    load_feed();
+    setTimeout(() => load_feed(), 5000)
   }
 
 
@@ -75,6 +75,7 @@ function explore_replies(post, previous_ul, original_post=false)
 
     let ul = document.createElement("ul")
     let li = document.createElement("li")
+    li.classList.add("post")
     li.innerHTML = `<img src="static/images/${post.image}" width="150"/><br>
         <em>${caption}</em>
         by ${post.username}<br>
@@ -93,11 +94,13 @@ function load_feed(mode=1)
 {
     get_request(`../get_feed/${mode}`).then(feed_json =>
     {
+        let thread_container = document.getElementById("threads_container")
+        thread_container.innerHTML = ""
         for (const thread of feed_json)
         {
-            explore_replies(thread, document.body, original_post=true)   
+            explore_replies(thread, thread_container, original_post=true)   
             let horiz_rule = document.createElement("hr")
-            document.body.appendChild(horiz_rule)       
+            thread_container.appendChild(horiz_rule)       
         }
     }).catch(error =>
         console.log(error)

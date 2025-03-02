@@ -10,8 +10,7 @@ GET_POSTS_AND_VOTES_QUERY = """SELECT username, post.post_id, user.user_id, post
                             GROUP BY post.post_id, username, user.user_id, post.parent_post_id, image, caption"""
 
 INSERT_NEW_POST_QUERY ="""INSERT INTO Post(image, user_id, parent_post_id, caption)
-                        VALUES (?, ?, ?, ?) RETURNING post_id AS post_id
-                        INSERT INTO Vote()"""
+                        VALUES (?, ?, ?, ?)"""
 
 GET_USERNAME_AND_PASSWORD_QUERY = "SELECT user_id, password FROM user WHERE username = ?"
 

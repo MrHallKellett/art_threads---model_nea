@@ -16,12 +16,9 @@ body, button, input
 #main_logo
 {
     font-family:"Rampart One", serif;
-
-        
-
 }
 
-li
+.post
 {
     list-style-type: none;
 }
