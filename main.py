@@ -20,25 +20,20 @@ def logged_in_to(session):
 
 ####################################################
 
-@app.route('/get_feed')
-def get_feed() -> list[Response, int]:
+@app.route('/get_feed/<mode>')
+def get_feed(mode) -> list[Response, int]:
     current_user = session.get("current_user")
     if current_user is None:
-        return {}, 511
+        return {}, STATUS_NOT_AUTHORISED
 
-    query = """SELECT username, post.post_id, user.user_id, post.parent_post_id, image, caption, SUM(prize)
-FROM post
-INNER JOIN user
-ON post.user_id = user.user_id
-INNER JOIN vote
-ON post.post_id = vote.post_id
-GROUP BY post.post_id"""
+
+    query = GET_POSTS_AND_VOTES_QUERY
     with Database() as db:        
         data = db.execute(query)
         print(query)
 
-    response = Feed(data).serialise()
-    return jsonify(response), 200
+    response = Feed(data, sort_popularity=mode=='2').serialise()
+    return jsonify(response), STATUS_OK
 
 ####################################################
 
@@ -58,13 +53,12 @@ def new_post(parent_post_id = None):
     ## store the stuff in the database
 
     with Database() as db:
-        db.execute("""INSERT INTO Post(image, user_id, parent_post_id, caption)
-                        VALUES (?, ?, ?, ?)""",
+        db.execute(INSERT_NEW_POST_QUERY,
                         [image.filename, session['current_user'][0],
                         parent_post_id, caption])
 
     response = True
-    return jsonify(response), 200
+    return jsonify(response), STATUS_OK
 
 ####################################################
 
@@ -76,7 +70,7 @@ def login():
         form_password = request.form["psw"]
 
         with Database() as db:
-            result = db.execute("SELECT user_id, password FROM user WHERE username = ?", [username], one_row=True)
+            result = db.execute(GET_USERNAME_AND_PASSWORD_QUERY, [username], one_row=True)
         
         if result is not None:
             user_id, db_password = result
@@ -90,33 +84,28 @@ def login():
             
 ####################################################
 
-@app.route('/submit_vote/<post_id>/<prize>')
-def submit_vote(post_id, prize):
+@app.route('/submit_vote/<post_id>/<rank>')
+def submit_vote(post_id, rank):
 
-    print(f"Submitted votoe {prize} for post {post_id}")
+    print(f"Submitted votoe {rank} for post {post_id}")
     user_id, username = session["current_user"]
 
-    prize = {"1":"3", "2":"2", "3":"1"}[prize]
+    prize = {"1":"3", "2":"2", "3":"1"}[rank]
 
     with Database() as db:
             # does not return 
-            post_changed_id = db.execute("""INSERT INTO vote(user_id, post_id, prize, parent_post_id)
-    VALUES (?, ?, ?, (SELECT parent_post_id
-                     FROM post
-                     WHERE post_id=?))
-    ON CONFLICT(user_id, prize, parent_post_id) 
-    DO UPDATE SET post_id = ?""",
+            post_changed_id = db.execute(SUBMIT_VOTE_QUERY,
     [user_id, post_id, prize, post_id, post_id])
     
 
                 
-    feedback = f"Vote #{prize} given to post {post_id} by {username}!"      
+    feedback = f"Vote #{rank} given to post {post_id} by {username}!"      
     if post_changed_id:
         feedback += f" (Reassigned from {post_changed_id})"
 
     print(feedback)
 
-    return jsonify(feedback), 200
+    return jsonify(feedback), STATUS_OK
 
 ####################################################
 

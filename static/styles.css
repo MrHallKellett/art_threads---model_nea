@@ -16,6 +16,23 @@ body, button, input
 #main_logo
 {
     font-family:"Rampart One", serif;
+
+        
+
+}
+
+li
+{
+    list-style-type: none;
+}
+
+#sticky_header
+{
+    
+    position: sticky;
+    top: 0;
+    padding: 10px 16px;
+    background: #FFF;
 }
 
 .flashed_message

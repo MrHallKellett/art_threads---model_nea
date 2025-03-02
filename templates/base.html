@@ -12,9 +12,19 @@
     </head>
 
     <body>
-        <header>
+        <div id="sticky_header">
+        <header >
             <h1 id="main_logo">ART THREADS</h1>
         </header>
+
+            <button id="new_thread_btn">NEW THREAD</button> 
+
+            <select id="sort_mode" onchange="apply_sorting()">
+                <option id="sort_by_recency" value=1>Sort most recent to least recent</option>
+                <option id="sort_by_popularity" value=2>Sort most popular to least popular</option>
+            </select>
+                <h2>YOUR FEED:</h2>
+        </div>
 
         <div id="flashes">
             {% for error in get_flashed_messages() %}

@@ -45,9 +45,15 @@ class Post:
         """Return a list of this post's replies"""
         return self.__replies
     
-    def _add_reply(self, reply: Self):
+    def _add_reply(self, reply: Self, sort_popularity: bool):
         """Add a post in reply to this post"""
-        self.__replies.append(reply)
+        if sort_popularity:
+            for index, post in enumerate(self.__replies):
+                if reply.popularity >= post.popularity:
+                    self.__replies.insert(index, reply)
+        else:
+            self.__replies.append(reply)
+
 
     def _display(self, depth: int=0):
         """Recursively display this post and its replies
@@ -71,14 +77,7 @@ class Post:
 #######################################################
 
 class Thread:
-    """A tree of posts
-
-    NOTE: a possible future improvement would be to change this into
-    an ordered (search) tree instead of its current form as an unordered
-    tree. Posts could be ordered by timestamp, this would improve the efficiency
-    of finding the parent post to reply to, as you can assume that any reply MUST
-    be posted at a later time than its parent. BFS could be improved to a
-    n-ary tree search algorithm instead!"""
+    """A tree of posts"""
 
     def __init__(self, this_post: Post):
         self.__root = this_post  # the original post in the thread
@@ -112,8 +111,9 @@ class Thread:
 
 class Feed:
     """A wrapper for an array of threads..."""
-    def __init__(self, data: list):
+    def __init__(self, data: list, sort_popularity=bool):
         self.__threads = []  # List()  ← creating your own ADT is worth more marks!
+        print(data)
         for row in data:
             
             username, post_id, user_id, parent_post_id, image, caption, popularity = row
@@ -123,8 +123,8 @@ class Feed:
                 this_thread = Thread(this_post)
                 self._add(this_thread)
             else:
-                self._assign_reply_to_post(this_post, int(parent_post_id))
-            
+                self._assign_reply_to_post(this_post, int(parent_post_id), sort_popularity)
+            print("Added post", post_id)
 
     
     def _add(self, this_thread: Thread):
@@ -132,13 +132,14 @@ class Feed:
         self.__threads.append(this_thread)
 
     def _assign_reply_to_post(self, this_post: Post,
-                             parent_post_id: int):
+                             parent_post_id: int,
+                             sort_popularity: bool):
         """Iterate through known threads to locate
         the parent post to assign a new reply to"""
         for thread in self.__threads:
             try:
                 parent_post = thread._find_post(parent_post_id)
-                parent_post._add_reply(this_post)
+                parent_post._add_reply(this_post, sort_popularity)
                 break
             except PostNotFoundError:
                 pass
@@ -148,8 +149,7 @@ class Feed:
     def _display(self):
         """Iterate through the threads and display them"""
         
-        for thread_num, thread in enumerate(self.__threads):
-        
+        for thread_num, thread in enumerate(self.__threads):        
             thread._display()
     
     def serialise(self):

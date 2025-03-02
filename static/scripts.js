@@ -1,5 +1,11 @@
 in_reply_to = null;
 
+function apply_sorting()
+{
+    let mode = document.getElementById("sort_mode").value;
+    load_feed(mode);
+}
+
 function submit_new_post(in_reply_to="") {
     // Create a new FormData object from the form
 
@@ -83,9 +89,9 @@ function explore_replies(post, previous_ul, original_post=false)
     }
 }
 
-function load_feed()
+function load_feed(mode=1)
 {
-    get_request("../get_feed").then(feed_json =>
+    get_request(`../get_feed/${mode}`).then(feed_json =>
     {
         for (const thread of feed_json)
         {
